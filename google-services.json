@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "272405655148",
+    "project_id": "jk-libras",
+    "storage_bucket": "jk-libras.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:272405655148:android:60808f098146bcd1537249",
+        "android_client_info": {
+          "package_name": "com.jklibras"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGNxEsvS6gJnE6ODn0Evw-txOcGK-ohZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

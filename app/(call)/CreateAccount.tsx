@@ -6,27 +6,69 @@ import {
     TouchableOpacity,
     StyleSheet,
     SafeAreaView,
-    Image
+    Image,
+    Alert
 } from 'react-native';
+import { auth, firestore } from "../../service/firebase";
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 export default function CreateAccountScreen({ navigation }) {
     const [profileStep, setProfileStep] = useState(1);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [formData, setFormData] = useState({
         nome: '',
         sobrenome: '',
         dataNascimento: '',
         cpf: '',
-        email: '',
-        senha: '',
-        confirmarSenha: '',
+        rua: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+        cep: '',
     });
+
+    const signUp = async (email: string, password: string, profileData: any) => {
+        try {
+            // Create user with email and password
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+            // Get user ID
+            const userId = userCredential.user.uid;
+
+            // Save additional profile data in Firestore
+            await setDoc(doc(firestore, 'users', userId), {
+                email: email,
+                ...profileData,
+                createdAt: new Date(),
+            });
+
+            console.log('User account created & profile data saved!');
+        } catch (error: any) {
+            console.error('Error signing up:', error.message);
+        }
+    };
 
     const handleSubmit = () => {
         // Handle form submission
-        if (profileStep < 3) {
+        if (profileStep <= 2) {
             setProfileStep((prev) => prev + 1);
         }
     };
+    const handleSignUp = () => {
+        if (!email || !password || !confirmPassword) {
+            Alert.alert('Please fill all fields');
+            return;
+          }
+        const profileData = formData;
+        if (password === confirmPassword) {
+            signUp(email, password, profileData);
+        }
+    }
     const handleCancel = () => {
         // Handle form submission
         if (profileStep >= 2) {
@@ -94,8 +136,8 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>E-MAIL</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.email}
-                                    onChangeText={(text) => setFormData({ ...formData, email: text })}
+                                    value={email}
+                                    onChangeText={(text) => setEmail(text)}
                                     placeholder=""
                                     placeholderTextColor="#999"
                                     keyboardType="email-address"
@@ -107,8 +149,8 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>SENHA</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.senha}
-                                    onChangeText={(text) => setFormData({ ...formData, senha: text })}
+                                    value={password}
+                                    onChangeText={(text) => setPassword(text)}
                                     placeholder=""
                                     placeholderTextColor="#999"
                                     secureTextEntry
@@ -119,8 +161,8 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>CONFIRMAR SENHA</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.confirmarSenha}
-                                    onChangeText={(text) => setFormData({ ...formData, confirmarSenha: text })}
+                                    value={confirmPassword}
+                                    onChangeText={(text) => setConfirmPassword(text)}
                                     placeholder=""
                                     placeholderTextColor="#999"
                                     secureTextEntry
@@ -152,8 +194,8 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>RUA</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.nome}
-                                    onChangeText={(text) => setFormData({ ...formData, nome: text })}
+                                    value={formData.rua}
+                                    onChangeText={(text) => setFormData({ ...formData, rua: text })}
                                     placeholder=""
                                     placeholderTextColor="#999"
                                 />
@@ -163,8 +205,8 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>NÚMERO</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.sobrenome}
-                                    onChangeText={(text) => setFormData({ ...formData, sobrenome: text })}
+                                    value={formData.numero}
+                                    onChangeText={(text) => setFormData({ ...formData, numero: text })}
                                     placeholder=""
                                     placeholderTextColor="#999"
                                 />
@@ -174,11 +216,9 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>COMPLEMENTO</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.dataNascimento}
-                                    onChangeText={(text) => setFormData({ ...formData, dataNascimento: text })}
+                                    value={formData.complemento}
+                                    onChangeText={(text) => setFormData({ ...formData, complemento: text })}
                                     placeholderTextColor="#999"
-                                    keyboardType="numeric"
-                                    maxLength={10}
                                 />
                             </View>
 
@@ -186,12 +226,10 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>BAIRRO</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.cpf}
-                                    onChangeText={(text) => setFormData({ ...formData, cpf: text })}
+                                    value={formData.bairro}
+                                    onChangeText={(text) => setFormData({ ...formData, bairro: text })}
                                     placeholder=""
                                     placeholderTextColor="#999"
-                                    keyboardType="numeric"
-                                    maxLength={11}
                                 />
                             </View>
 
@@ -199,11 +237,10 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>CIDADE</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.email}
-                                    onChangeText={(text) => setFormData({ ...formData, email: text })}
+                                    value={formData.cidade}
+                                    onChangeText={(text) => setFormData({ ...formData, cidade: text })}
                                     placeholder=""
                                     placeholderTextColor="#999"
-                                    keyboardType="email-address"
                                     autoCapitalize="none"
                                 />
                             </View>
@@ -212,8 +249,8 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>ESTADO</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.senha}
-                                    onChangeText={(text) => setFormData({ ...formData, senha: text })}
+                                    value={formData.estado}
+                                    onChangeText={(text) => setFormData({ ...formData, estado: text })}
                                     placeholder=""
                                     placeholderTextColor="#999"
                                 />
@@ -223,8 +260,8 @@ export default function CreateAccountScreen({ navigation }) {
                                 <Text style={styles.label}>CEP</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={formData.confirmarSenha}
-                                    onChangeText={(text) => setFormData({ ...formData, confirmarSenha: text })}
+                                    value={formData.cep}
+                                    onChangeText={(text) => setFormData({ ...formData, cep: text })}
                                     placeholder=""
                                     placeholderTextColor="#999"
                                 />
@@ -273,7 +310,7 @@ export default function CreateAccountScreen({ navigation }) {
                                     <Text style={styles.cancelButtonText}>CONCLUIR</Text>
                                 </TouchableOpacity>
                             </View>
-                            <TouchableOpacity style={styles.loginButton} onPress={handleCancel}>
+                            <TouchableOpacity style={styles.loginButton} onPress={handleSignUp}>
                                 <Text style={styles.loginButtonText}>CONCLUIR</Text>
                             </TouchableOpacity>
                         </View>

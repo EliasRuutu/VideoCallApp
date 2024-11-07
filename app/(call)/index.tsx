@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,19 +7,50 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
+  Alert 
 } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from "../../service/firebase";
 
 export default function LoginScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('User signed in!', userCredential.user);
+    } catch (error: any) {
+      console.error('Error signing in:', error.message);
+      // Handle specific error codes here
+      if (error.code === 'auth/wrong-password') {
+        console.log('The password is invalid or the user does not have a password.');
+      }
+      if (error.code === 'auth/user-not-found') {
+        console.log('No user found with this email.');
+      }
+    }
+  };
+
+  const handleSignIn = () => {
+    if (!email || !password) {
+      Alert.alert('Please fill all fields');
+      return;
+    }
+
+    signIn(email, password);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>JK LIBRAS</Text>
       </View>
-      
+
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Image 
-            source={require('../../assets/images/ear-icon.png')} 
+          <Image
+            source={require('../../assets/images/ear-icon.png')}
             style={styles.icon}
           />
         </View>
@@ -30,18 +61,22 @@ export default function LoginScreen() {
             style={styles.input}
             placeholder=""
             placeholderTextColor="#999"
+            value={email}
+            onChangeText={(text) => setEmail(text)}
           />
-          
+
           <Text style={styles.inputLabel}>SENHA</Text>
           <TextInput
             style={styles.input}
             placeholder=""
             placeholderTextColor="#999"
+            value={password}
+            onChangeText={(text) => setPassword(text)}
             secureTextEntry
           />
         </View>
 
-        <TouchableOpacity style={styles.loginButton}>
+        <TouchableOpacity style={styles.loginButton} onPress={handleSignIn}>
           <Text style={styles.loginButtonText}>ENTRAR</Text>
         </TouchableOpacity>
 
@@ -86,7 +121,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: '50%',
     top: -40,
-    transform: [{ translateX: -20 }], 
+    transform: [{ translateX: -20 }],
     width: 80,
     height: 80,
   },

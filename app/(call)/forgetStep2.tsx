@@ -37,7 +37,7 @@ export default function Step2Screen() {
       </View>
     </SafeAreaView>
   );
-}
+}  
 
 const styles = StyleSheet.create({
   container: {
