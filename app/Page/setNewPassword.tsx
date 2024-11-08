@@ -11,20 +11,24 @@ import {
 } from 'react-native';
 import { auth } from "../../service/firebase";
 import { confirmPasswordReset } from "firebase/auth";
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-export default function SetNewPassword({ route }) {
+export default function SetNewPassword() {
   const [oobCode, setOobCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const route = useRoute();
+  const { code } = route.params; // Assuming you pass oobCode as a parameter
 
   useEffect(() => {
     // Extract oobCode from URL parameters
-    const { code } = route.params; // Assuming you pass oobCode as a parameter
-    setOobCode(code);
+    if (route.params) {
+      setOobCode(code);
+    }
   }, [route.params]);
 
   const handleResetPassword = async () => {
-    if ((newPassword === confirmNewPassword) && !newPassword) {
+    if (newPassword === confirmNewPassword && newPassword) {
       try {
         await confirmPasswordReset(auth, oobCode, newPassword);
         Alert.alert("Success", "Your password has been updated!");
@@ -32,6 +36,8 @@ export default function SetNewPassword({ route }) {
       } catch (error: any) {
         Alert.alert("Error", error.message);
       }
+    } else {
+      Alert.alert("Error", "Passwords do not match or are empty.");
     }
   };
 

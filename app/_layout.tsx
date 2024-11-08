@@ -15,7 +15,7 @@ const linking = {
   prefixes: ['jk-libras.firebaseapp://', 'https://jk-libras.firebaseapp.com'],
   config: {
     screens: {
-      setNewPassword: 'reset-password', // Match this with your deep link path
+      'reset-password': 'Page', // Match this with your deep link path
     },
   },
 };
@@ -37,11 +37,12 @@ export default function RootLayout() {
   }
 
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer linking={linking} independent={true}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+
         <Stack>
           <Stack.Screen name="(call)" options={{ headerShown: false }} />
-          <Stack.Screen name="setNewPassword" /> {/* No component prop needed */}
+          <Stack.Screen name="Page"/>
           <Stack.Screen name="+not-found" />
         </Stack>
       </ThemeProvider>

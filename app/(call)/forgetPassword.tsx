@@ -81,9 +81,9 @@ export default function ForgetPassword() {
                             </View>
 
                             <TouchableOpacity style={styles.loginButton} onPress={() => {
-                                // if (isValidCPF(cpf) && isValidEmail(email)) {
-                                handleNext();
-                                // }
+                                if (isValidCPF(cpf) && isValidEmail(email)) {
+                                    handleNext();
+                                }
                             }}>
                                 <Text style={styles.loginButtonText}>ENVIAR LINK</Text>
                             </TouchableOpacity>
