@@ -51,27 +51,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="forgetStep1"
+        name="forgetPassword"
         options={{
-          title: 'Forgot1',
+          title: 'ForgotPassword',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="forgetStep2"
+        name="setNewPassword"
         options={{
-          title: 'Forgot2',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="forgetStep3"
-        options={{
-          title: 'Forgot3',
+          title: 'SetNewPassword',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
           ),

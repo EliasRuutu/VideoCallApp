@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,19 +7,44 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
+  Alert
 } from 'react-native';
+import { auth } from "../../service/firebase";
+import { confirmPasswordReset } from "firebase/auth";
 
-export default function Step3Screen() {
+export default function SetNewPassword({ route }) {
+  const [oobCode, setOobCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+  useEffect(() => {
+    // Extract oobCode from URL parameters
+    const { code } = route.params; // Assuming you pass oobCode as a parameter
+    setOobCode(code);
+  }, [route.params]);
+
+  const handleResetPassword = async () => {
+    if ((newPassword === confirmNewPassword) && !newPassword) {
+      try {
+        await confirmPasswordReset(auth, oobCode, newPassword);
+        Alert.alert("Success", "Your password has been updated!");
+        // Redirect to login or home page
+      } catch (error: any) {
+        Alert.alert("Error", error.message);
+      }
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>JK LIBRAS</Text>
       </View>
-      
+
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Image 
-            source={require('../../assets/images/ear-icon.png')} 
+          <Image
+            source={require('../../assets/images/ear-icon.png')}
             style={styles.icon}
           />
         </View>
@@ -29,19 +54,24 @@ export default function Step3Screen() {
           <TextInput
             style={styles.input}
             placeholder=""
+            value={newPassword}
+            onChangeText={(text) => setNewPassword(text)}
             placeholderTextColor="#999"
+            secureTextEntry
           />
-          
+
           <Text style={styles.inputLabel}>CONFIRMAR NOVA SENHA</Text>
           <TextInput
             style={styles.input}
             placeholder=""
+            value={confirmNewPassword}
+            onChangeText={(text) => setConfirmNewPassword(text)}
             placeholderTextColor="#999"
             secureTextEntry
           />
         </View>
 
-        <TouchableOpacity style={styles.loginButton}>
+        <TouchableOpacity style={styles.loginButton} onPress={handleResetPassword}>
           <Text style={styles.loginButtonText}>CONCLUIR</Text>
         </TouchableOpacity>
 
@@ -86,7 +116,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: '50%',
     top: -40,
-    transform: [{ translateX: -20 }], 
+    transform: [{ translateX: -20 }],
     width: 80,
     height: 80,
   },
