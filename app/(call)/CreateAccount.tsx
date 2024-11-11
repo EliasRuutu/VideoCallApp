@@ -127,7 +127,6 @@ export default function CreateAccountScreen() {
 
     const handleSubmit = () => {
         // Handle form submission
-        setProfileStep((prev) => prev + 1);
         if (profileStep <= 2) {
             if (profileStep == 1) {
                 const emptyFields = [];
