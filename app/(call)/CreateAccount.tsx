@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -7,21 +7,63 @@ import {
     StyleSheet,
     SafeAreaView,
     Image,
-    Alert
+    Alert,
+    ScrollView,
+    BackHandler,
 } from 'react-native';
 import { auth, firestore } from "../../service/firebase";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { isValidCPF, isValidCEP, isValidEmail, getStates, getCities } from '@brazilian-utils/brazilian-utils';
+import { useNavigation } from '@react-navigation/native';
+import SelectDropdown from 'react-native-select-dropdown';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+const emojisWithIcons = [
+    { title: 'happy', icon: 'emoticon-happy-outline' },
+    { title: 'cool', icon: 'emoticon-cool-outline' },
+    { title: 'lol', icon: 'emoticon-lol-outline' },
+    { title: 'sad', icon: 'emoticon-sad-outline' },
+    { title: 'cry', icon: 'emoticon-cry-outline' },
+    { title: 'angry', icon: 'emoticon-angry-outline' },
+    { title: 'confused', icon: 'emoticon-confused-outline' },
+    { title: 'excited', icon: 'emoticon-excited-outline' },
+    { title: 'kiss', icon: 'emoticon-kiss-outline' },
+    { title: 'devil', icon: 'emoticon-devil-outline' },
+    { title: 'dead', icon: 'emoticon-dead-outline' },
+    { title: 'wink', icon: 'emoticon-wink-outline' },
+    { title: 'sick', icon: 'emoticon-sick-outline' },
+    { title: 'frown', icon: 'emoticon-frown-outline' },
+];
+type StateName =
+    | "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES"
+    | "GO" | "MA" | "MG" | "MT" | "MS" | "PA" | "PB"
+    | "PE" | "PI" | "PR" | "RJ" | "RN" | "RO" | "RS"
+    | "RR" | "SC" | "SE" | "SP" | "TO";
 
-export default function CreateAccountScreen({ navigation }) {
+interface FormData {
+    nome: string;
+    sobrenome: string;
+    dataNascimento: Date;
+    cpf: string;
+    rua: string;
+    numero: string;
+    complemento: string;
+    bairro: string;
+    cidade: string;
+    estado: StateName | ''; // Allow empty string or one of the state names
+    cep: string;
+}
+export default function CreateAccountScreen() {
     const [profileStep, setProfileStep] = useState(1);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [formData, setFormData] = useState({
+    const [isCity, setIsCity] = useState(true);
+    const [formData, setFormData] = useState<FormData>({
         nome: '',
         sobrenome: '',
-        dataNascimento: '',
+        dataNascimento: new Date(),
         cpf: '',
         rua: '',
         numero: '',
@@ -31,6 +73,36 @@ export default function CreateAccountScreen({ navigation }) {
         estado: '',
         cep: '',
     });
+    const states = getStates();
+    const [cities, setCities] = useState<string[]>([]); // Adjust type as needed
+    
+    useEffect(() => {
+        if(formData.estado !== '') {
+            setIsCity(false);
+            setFormData({...formData, cidade: ''});
+            setCities(getCities(formData.estado)); 
+        }
+    }, [formData.estado])
+    useEffect(() => {
+        const backAction = () => {
+          handleCancel();
+          return true; // Prevent default behavior (exit app)
+        };
+    
+        const backHandler = BackHandler.addEventListener(
+          'hardwareBackPress',
+          backAction
+        );
+    
+        return () => backHandler.remove(); // Clean up the event listener on unmount
+      }, [profileStep]);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const onChangeDate = (event: any, selectedDate: any) => {
+        const currentDate = selectedDate || formData.dataNascimento;
+        setShowDatePicker(false);
+        setFormData({ ...formData, dataNascimento: currentDate });
+    };
+    const navigator = useNavigation();
 
     const signUp = async (email: string, password: string, profileData: any) => {
         try {
@@ -55,18 +127,62 @@ export default function CreateAccountScreen({ navigation }) {
 
     const handleSubmit = () => {
         // Handle form submission
+        setProfileStep((prev) => prev + 1);
         if (profileStep <= 2) {
-            setProfileStep((prev) => prev + 1);
+            if (profileStep == 1) {
+                const emptyFields = [];
+
+                // Check for empty fields and collect their names
+                if (formData.nome === '') emptyFields.push('Nome');
+                if (formData.sobrenome === '') emptyFields.push('Sobrenome');
+                if (formData.dataNascimento === null) emptyFields.push('Data de Nascimento');
+                if (formData.cpf === '') emptyFields.push('CPF');
+                if (email === '') emptyFields.push('Email');
+                if (password === '') emptyFields.push('Password');
+                if (confirmPassword === '') emptyFields.push('Confirm Password');
+                if (emptyFields.length > 0) {
+                    Alert.alert('Please fill all fields: ' + emptyFields.join(', '));
+                } else if (password !== confirmPassword) {
+                    Alert.alert('Password did not match!');
+                } else if (!isValidEmail(email)) {
+                    Alert.alert('Invalid email!');
+                } else if (!isValidCPF(formData.cpf)) {
+                    Alert.alert('Invalid CPF!');
+                } else {
+                    setProfileStep((prev) => prev + 1);
+                }
+            } else if (profileStep == 2) {
+                const emptyFields = [];
+
+                // Check for empty address fields and collect their names
+                if (formData.rua === '') emptyFields.push('Rua');
+                if (formData.numero === '') emptyFields.push('Número');
+                if (formData.complemento === '') emptyFields.push('Complemento');
+                if (formData.bairro === '') emptyFields.push('Bairro');
+                if (formData.cidade === '') emptyFields.push('Cidade');
+                if (formData.estado === '') emptyFields.push('Estado');
+                if (formData.cep === '') emptyFields.push('CEP');
+
+                // If there are empty fields, show an alert
+                if (emptyFields.length > 0) {
+                    Alert.alert('Please fill all fields: ' + emptyFields.join(', '));
+                } else if (!isValidCEP(formData.cep)) {
+                    Alert.alert('Invalid CEP!');
+                } else {
+                    setProfileStep((prev) => prev + 1);
+                }
+            }
         }
     };
     const handleSignUp = () => {
         if (!email || !password || !confirmPassword) {
-            Alert.alert('Please fill all fields');
+            Alert.alert('Please fill all fields!');
             return;
-          }
+        }
         const profileData = formData;
         if (password === confirmPassword) {
             signUp(email, password, profileData);
+            navigator.navigate('home');
         }
     }
     const handleCancel = () => {
@@ -80,7 +196,7 @@ export default function CreateAccountScreen({ navigation }) {
         <SafeAreaView style={styles.container}>
             {
                 profileStep === 1 ? (
-                    <View style={styles.scrollView}>
+                    <ScrollView contentContainerStyle={styles.scrollView}>
                         <View style={styles.header}>
                             <Text style={styles.headerText}>CRIE SUA CONTA</Text>
                         </View>
@@ -109,14 +225,19 @@ export default function CreateAccountScreen({ navigation }) {
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>DATA DE NASCIMENTO</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={formData.dataNascimento}
-                                    onChangeText={(text) => setFormData({ ...formData, dataNascimento: text })}
-                                    placeholderTextColor="#999"
-                                    keyboardType="numeric"
-                                    maxLength={10}
-                                />
+                                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                                    <Text style={styles.input}>
+                                        {formData.dataNascimento.toLocaleDateString()}
+                                    </Text>
+                                </TouchableOpacity>
+                                {showDatePicker && (
+                                    <DateTimePicker
+                                        value={formData.dataNascimento}
+                                        mode="date"
+                                        display="default"
+                                        onChange={onChangeDate}
+                                    />
+                                )}
                             </View>
 
                             <View style={styles.inputContainer}>
@@ -183,9 +304,9 @@ export default function CreateAccountScreen({ navigation }) {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </View>
+                    </ScrollView>
                 ) : profileStep === 2 ? (
-                    <View style={styles.scrollView}>
+                    <ScrollView contentContainerStyle={styles.scrollView}>
                         <View style={styles.header}>
                             <Text style={styles.headerText}>CRIE SUA CONTA</Text>
                         </View>
@@ -235,24 +356,62 @@ export default function CreateAccountScreen({ navigation }) {
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>CIDADE</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={formData.cidade}
-                                    onChangeText={(text) => setFormData({ ...formData, cidade: text })}
-                                    placeholder=""
-                                    placeholderTextColor="#999"
-                                    autoCapitalize="none"
+                                <SelectDropdown
+                                    data={cities}
+                                    disabled={isCity}
+                                    onSelect={(selectedItem, index) => {
+                                        console.log(selectedItem, index);
+                                        setFormData({...formData, cidade: selectedItem})
+                                    }}
+                                    renderButton={(selectedItem, isOpened) => {
+                                        return (
+                                            <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                    {(selectedItem) || ''}
+                                                </Text>
+                                                <Icon name={isOpened ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                                            </View>
+                                        );
+                                    }}
+                                    renderItem={(item, index, isSelected) => {
+                                        return (
+                                            <View style={{ ...styles.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
+                                                <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                                            </View>
+                                        );
+                                    }}
+                                    showsVerticalScrollIndicator={false}
+                                    dropdownStyle={styles.dropdownMenuStyle}
                                 />
                             </View>
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>ESTADO</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={formData.estado}
-                                    onChangeText={(text) => setFormData({ ...formData, estado: text })}
-                                    placeholder=""
-                                    placeholderTextColor="#999"
+                                <SelectDropdown
+                                    data={states}
+                                    onSelect={(selectedItem, index) => {
+                                        console.log(selectedItem.name, index);
+                                        setFormData({...formData, estado: selectedItem.name})
+                                    }}
+                                    renderButton={(selectedItem, isOpened) => {
+                                        return (
+                                            <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                    {(selectedItem && selectedItem.name) || ''}
+                                                </Text>
+                                                <Icon name={isOpened ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                                            </View>
+                                        );
+                                    }}
+                                    renderItem={(item, index, isSelected) => {
+                                        return (
+                                            <View style={{ ...styles.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
+                                                <Text style={styles.dropdownItemTxtStyle}>{item.name}</Text>
+                                            </View>
+                                        );
+                                    }}
+                                    showsVerticalScrollIndicator={false}
+                                    dropdownStyle={styles.dropdownMenuStyle}
                                 />
                             </View>
 
@@ -281,7 +440,7 @@ export default function CreateAccountScreen({ navigation }) {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </View>
+                    </ScrollView>
                 ) : profileStep === 3 ? (
                     <SafeAreaView style={styles.container}>
                         <View style={styles.header3}>
@@ -302,12 +461,12 @@ export default function CreateAccountScreen({ navigation }) {
                                 <TouchableOpacity
                                     style={styles.cancelButton}
                                 >
-                                    <Text style={styles.cancelButtonText}>VOLTAR</Text>
+                                    <Text style={styles.cancelButtonText}>SAIR</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={styles.cancelButton}
                                 >
-                                    <Text style={styles.cancelButtonText}>CONCLUIR</Text>
+                                    <Text style={styles.cancelButtonText}>REENVIAR LINK</Text>
                                 </TouchableOpacity>
                             </View>
                             <TouchableOpacity style={styles.loginButton} onPress={handleSignUp}>
@@ -325,12 +484,12 @@ export default function CreateAccountScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#ff0000',
     },
     scrollView: {
-        flex: 1,
-        height: "100%",
-        backgroundColor: "ff0000"
+        flexGrow: 1,
+        backgroundColor: "00ff00",
+        justifyContent: 'center'
     },
     formContainer: {
         padding: 12,
@@ -360,6 +519,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 7,
         fontSize: 16,
+        textAlign: 'center',
         color: '#333',
     },
     buttonContainer: {
@@ -452,5 +612,58 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    picker: {
+        height: 50,
+        width: 150,
+    },
+    selectedText: {
+        marginTop: 20,
+        fontSize: 16,
+    },
+    dropdownButtonStyle: {
+        width: "100%",
+        height: 42,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+    },
+    dropdownButtonTxtStyle: {
+        textAlign: 'center',
+        flex: 1,
+        marginRight: -25,
+        fontSize: 16,
+    },
+    dropdownButtonArrowStyle: {
+        fontSize: 28,
+    },
+    dropdownButtonIconStyle: {
+        fontSize: 28,
+        marginRight: 8,
+    },
+    dropdownMenuStyle: {
+        backgroundColor: '#E9ECEF',
+        borderRadius: 8,
+    },
+    dropdownItemStyle: {
+        width: '100%',
+        flexDirection: 'row',
+        paddingHorizontal: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    dropdownItemTxtStyle: {
+        flex: 1,
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#151E26',
+    },
+    dropdownItemIconStyle: {
+        fontSize: 28,
+        marginRight: 8,
     },
 });

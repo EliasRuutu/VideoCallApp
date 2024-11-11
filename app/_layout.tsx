@@ -5,7 +5,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-
+import { SafeAreaView } from "react-native";
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -37,15 +37,15 @@ export default function RootLayout() {
   }
 
   return (
-    <NavigationContainer linking={linking} independent={true}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <NavigationContainer linking={linking} independent={true}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
 
-        <Stack>
-          <Stack.Screen name="(call)" options={{ headerShown: false }} />
-          <Stack.Screen name="Page"/>
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </ThemeProvider>
-    </NavigationContainer>
+          <Stack>
+            <Stack.Screen name="(call)" options={{ headerShown: false }} />
+            <Stack.Screen name="Page" />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </ThemeProvider>
+      </NavigationContainer>
   );
 }

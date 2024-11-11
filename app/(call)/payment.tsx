@@ -22,6 +22,7 @@ export default function CardDetailsScreen({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
+            <StatusBar backgroundColor="#3b5998" barStyle="light-content" />
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <TouchableOpacity onPress={() => navigation.openDrawer()}>
@@ -126,10 +127,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     header: {
+        marginTop: 20,
         backgroundColor: '#3b5998',
         flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'space-between',
+        alignItems: 'center',
         padding: 16,
         height: '15%'
     },

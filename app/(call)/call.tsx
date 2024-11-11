@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/Feather';
 export default function CallScreen() {
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor="#436299" barStyle="light-content" />
+            {/* <StatusBar backgroundColor="#436299" barStyle="light-content" /> */}
             <View style={styles.header}>
                 <Text style={styles.headerText}>JK LIBRAS</Text>
             </View>
@@ -30,10 +30,11 @@ export default function CallScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#436299',
+        backgroundColor: '#3b5998',
     },
     header: {
-        backgroundColor: '#436299',
+        marginTop: 20,
+        backgroundColor: '#3b5998',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',

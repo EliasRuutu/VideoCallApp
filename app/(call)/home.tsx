@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/Feather';
 export default function ActionsScreen() {
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor="#436299" barStyle="light-content" />
+            <StatusBar backgroundColor="#3b5998" barStyle="light-content" />
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <TouchableOpacity>
@@ -55,7 +55,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#436299',
     },
     header: {
-        backgroundColor: '#436299',
+        marginTop: 20,
+        backgroundColor: '#3b5998',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
