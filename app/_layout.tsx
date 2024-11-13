@@ -37,15 +37,15 @@ export default function RootLayout() {
   }
 
   return (
-      <NavigationContainer linking={linking} independent={true}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationContainer linking={linking} independent={true}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(call)" options={{ headerShown: false }} />
+          <Stack.Screen name="Page" />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </ThemeProvider>
+    </NavigationContainer>
 
-          <Stack>
-            <Stack.Screen name="(call)" options={{ headerShown: false }} />
-            <Stack.Screen name="Page" />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </ThemeProvider>
-      </NavigationContainer>
   );
 }
