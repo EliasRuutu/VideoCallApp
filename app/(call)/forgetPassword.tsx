@@ -114,7 +114,7 @@ export default function ForgetPassword() {
                             <View style={styles.textContainer}>
                                 <Text style={styles.contentText}>UM LINK DE REDEFINIÇÃO FOI ENVIADO PARA SEU E-MAIL.</Text>
                             </View>
-                            <TouchableOpacity style={styles.loginButton} onPress={handleNext}>
+                            <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
                                 <Text style={styles.loginButtonText}>CONCLUIR</Text>
                             </TouchableOpacity>
                         </View>

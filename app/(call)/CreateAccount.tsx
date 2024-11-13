@@ -41,7 +41,7 @@ interface FormData {
     cep: string;
 }
 export default function CreateAccountScreen() {
-    const [profileStep, setProfileStep] = useState(2);
+    const [profileStep, setProfileStep] = useState(1);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
