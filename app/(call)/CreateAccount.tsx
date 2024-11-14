@@ -41,7 +41,7 @@ interface FormData {
     cep: string;
 }
 export default function CreateAccountScreen() {
-    const [profileStep, setProfileStep] = useState(1);
+    const [profileStep, setProfileStep] = useState(2);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -62,7 +62,9 @@ export default function CreateAccountScreen() {
     });
     const states = getStates();
     const [cities, setCities] = useState<string[]>([]); // Adjust type as neededr
-
+    const [cityData, setCityData] = useState([
+        { id: '0', title: 'Selecione um Estado' },
+        ]);
     useEffect(() => {
         if (formData.estado !== '') {
             setIsCity(true);
@@ -70,6 +72,13 @@ export default function CreateAccountScreen() {
             setCities(getCities(formData.estado));
         }
     }, [formData.estado])
+    useEffect(() => {
+        setCityData([
+            ...cities.map((city, index) => ({
+                id: (index + 1).toString(),
+                title: city
+            }))]);
+    }, [cities]);
     useEffect(() => {
         const backAction = () => {
             handleCancel();
@@ -84,6 +93,9 @@ export default function CreateAccountScreen() {
         return () => backHandler.remove(); // Clean up the event listener on unmount
     }, [profileStep]);
     const [showDatePicker, setShowDatePicker] = useState(false);
+    
+
+    
     const onChangeDate = (event: any, selectedDate: any) => {
         const currentDate = selectedDate || formData.dataNascimento;
         setShowDatePicker(false);
@@ -195,6 +207,9 @@ export default function CreateAccountScreen() {
             ...formData,
             estado: (item?.title as "" | StateName) || "", // Default to empty string if null/undefined
         });
+        setCityData(prevCityData => 
+            prevCityData.filter(city => city.id !== '0')
+        );
         console.log('Selected City:')
     };
     const handleOnSelectCity = (item: AutocompleteDropdownItem | null) => {
@@ -375,7 +390,7 @@ export default function CreateAccountScreen() {
                                         clearOnFocus={false}
                                         closeOnBlur={true}
                                         showClear={true}
-                                        containerStyle={styles.dropdownAutocomplete}
+                                        inputContainerStyle={styles.dropdownAutocomplete}
                                     />
                                 </View>
                                 <View style={styles.inputContainer}>
@@ -383,16 +398,13 @@ export default function CreateAccountScreen() {
                                     <AutocompleteDropdown
                                         onSelectItem={handleOnSelectCity}
                                         initialValue={{ id: '0' }}
-                                        dataSet={[
-                                            { id: '0', title: 'Selecione um Estado' },
-                                            ...cities.map((city, index) => ({
-                                                id: (index + 1).toString(),
-                                                title: city
-                                            }))]}
+                                        dataSet={cityData}
                                         clearOnFocus={false}
                                         closeOnBlur={true}
                                         showClear={true}
                                         editable={isCity}
+                                        inputContainerStyle={styles.dropdownAutocomplete}
+                                        
                                     />
                                 </View>
 
